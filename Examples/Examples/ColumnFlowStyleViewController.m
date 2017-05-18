@@ -1,21 +1,21 @@
 //
-//  TableViewStyleViewController.m
+//  ColumnFlowStyleViewController.m
 //  Examples
 //
 //  Created by 李传格 on 2017/5/18.
 //  Copyright © 2017年 fanmei. All rights reserved.
 //
 
-#import "TableViewStyleViewController.h"
+#import "ColumnFlowStyleViewController.h"
 #import "FMCollectionView.h"
 
-@interface TableViewStyleViewController () <FMCollectionViewDelegatesAndDataSource>
+@interface ColumnFlowStyleViewController () <FMCollectionViewDelegatesAndDataSource>
 
 @property (nonatomic, strong) FMCollectionView *collectionView;
 
 @end
 
-@implementation TableViewStyleViewController
+@implementation ColumnFlowStyleViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -36,6 +36,26 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (FMSectionLayoutStyle)collectionView:(FMCollectionView *)collectionView layoutInSection:(NSInteger)section {
+    return FMSectionLayoutStyleColumnFlow;
+}
+
+- (NSInteger)numberOfColumnsForColumnFlowLayoutInSection:(NSInteger)section {
+    return 3;
+}
+
+- (CGFloat)heightAtIndexPath:(NSIndexPath *)indexPath forColumnFlowLayoutWithItemWidth:(CGFloat)itemWidth {
+    if (indexPath.row % 4 == 0) {
+        return itemWidth * 0.6;
+    } else if (indexPath.row % 4 == 1) {
+        return itemWidth;
+    } else if (indexPath.row % 4 == 2) {
+        return itemWidth * 1.2;
+    } else {
+        return itemWidth * 1.5;
+    }
+}
+
 - (NSInteger)numberOfSectionsInCollectionView:(FMCollectionView *)collectionView {
     return 10;
 }
@@ -53,15 +73,5 @@
     
     return item;
 }
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

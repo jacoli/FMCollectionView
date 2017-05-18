@@ -25,10 +25,14 @@
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
+    self.tableView.rowHeight = 96;
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
     
     self.models = [[NSMutableArray alloc] init];
-    [self.models addObject:@{@"title" : @"normal table view", @"class" : @"TableViewStyleViewController"}];
+    [self.models addObject:@{@"title" : @"Row layout style (Same to table view)", @"class" : @"TableViewStyleViewController"}];
+    [self.models addObject:@{@"title" : @"Column flow layout style", @"class" : @"ColumnFlowStyleViewController"}];
+    [self.models addObject:@{@"title" : @"Grid layout style", @"class" : @"GridStyleViewController"}];
+    [self.models addObject:@{@"title" : @"Frame layout style(Used for custom layout)", @"class" : @"FrameStyleViewController"}];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -45,6 +49,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
     cell.textLabel.text = self.models[indexPath.row][@"title"];
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     return cell;
 }
 

@@ -9,7 +9,7 @@
 #import "FMCollectionView.h"
 #import <objc/runtime.h>
 
-#define FMCollectionViewDebug (1)
+#define FMCollectionViewDebug (0)
 
 @interface FMCollectionItemModel : NSObject
 

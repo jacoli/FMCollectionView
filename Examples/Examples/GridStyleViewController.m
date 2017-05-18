@@ -1,21 +1,21 @@
 //
-//  TableViewStyleViewController.m
+//  GridStyleViewController.m
 //  Examples
 //
 //  Created by 李传格 on 2017/5/18.
 //  Copyright © 2017年 fanmei. All rights reserved.
 //
 
-#import "TableViewStyleViewController.h"
+#import "GridStyleViewController.h"
 #import "FMCollectionView.h"
 
-@interface TableViewStyleViewController () <FMCollectionViewDelegatesAndDataSource>
+@interface GridStyleViewController () <FMCollectionViewDelegatesAndDataSource>
 
 @property (nonatomic, strong) FMCollectionView *collectionView;
 
 @end
 
-@implementation TableViewStyleViewController
+@implementation GridStyleViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -36,6 +36,34 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (FMSectionLayoutStyle)collectionView:(FMCollectionView *)collectionView layoutInSection:(NSInteger)section {
+    return FMSectionLayoutStyleGrid;
+}
+
+- (NSInteger)numberOfColumnsForGridLayoutInSection:(NSInteger)section {
+    if (section % 4 == 0) {
+        return 5;
+    } else if (section % 4 == 1) {
+        return 4;
+    } else if (section % 4 == 2) {
+        return 3;
+    } else {
+        return 2;
+    }
+}
+
+- (CGFloat)heightInSection:(NSInteger)section forGridLayoutWithItemWidth:(CGFloat)itemWidth {
+    if (section % 4 == 0) {
+        return itemWidth * 0.6;
+    } else if (section % 4 == 1) {
+        return itemWidth;
+    } else if (section % 4 == 2) {
+        return itemWidth * 1.2;
+    } else {
+        return itemWidth * 1.5;
+    }
+}
+
 - (NSInteger)numberOfSectionsInCollectionView:(FMCollectionView *)collectionView {
     return 10;
 }
@@ -53,15 +81,5 @@
     
     return item;
 }
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

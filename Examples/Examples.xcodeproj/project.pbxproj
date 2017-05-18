@@ -17,6 +17,9 @@
 		B7BD46391ECD8CDD000E183E /* HomeTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD46381ECD8CDD000E183E /* HomeTableViewController.m */; };
 		B7BD463C1ECD8F48000E183E /* TableViewStyleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD463B1ECD8F48000E183E /* TableViewStyleViewController.m */; };
 		B7BD46401ECD8F66000E183E /* FMCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD463F1ECD8F66000E183E /* FMCollectionView.m */; };
+		B7BD46431ECD9454000E183E /* ColumnFlowStyleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD46421ECD9454000E183E /* ColumnFlowStyleViewController.m */; };
+		B7BD46461ECD9608000E183E /* GridStyleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD46451ECD9608000E183E /* GridStyleViewController.m */; };
+		B7BD46491ECD96F4000E183E /* FrameStyleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD46481ECD96F4000E183E /* FrameStyleViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +60,12 @@
 		B7BD463B1ECD8F48000E183E /* TableViewStyleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewStyleViewController.m; sourceTree = "<group>"; };
 		B7BD463E1ECD8F66000E183E /* FMCollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMCollectionView.h; sourceTree = "<group>"; };
 		B7BD463F1ECD8F66000E183E /* FMCollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMCollectionView.m; sourceTree = "<group>"; };
+		B7BD46411ECD9454000E183E /* ColumnFlowStyleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColumnFlowStyleViewController.h; sourceTree = "<group>"; };
+		B7BD46421ECD9454000E183E /* ColumnFlowStyleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ColumnFlowStyleViewController.m; sourceTree = "<group>"; };
+		B7BD46441ECD9608000E183E /* GridStyleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GridStyleViewController.h; sourceTree = "<group>"; };
+		B7BD46451ECD9608000E183E /* GridStyleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GridStyleViewController.m; sourceTree = "<group>"; };
+		B7BD46471ECD96F4000E183E /* FrameStyleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameStyleViewController.h; sourceTree = "<group>"; };
+		B7BD46481ECD96F4000E183E /* FrameStyleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FrameStyleViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +128,12 @@
 				B7BD46381ECD8CDD000E183E /* HomeTableViewController.m */,
 				B7BD463A1ECD8F48000E183E /* TableViewStyleViewController.h */,
 				B7BD463B1ECD8F48000E183E /* TableViewStyleViewController.m */,
+				B7BD46411ECD9454000E183E /* ColumnFlowStyleViewController.h */,
+				B7BD46421ECD9454000E183E /* ColumnFlowStyleViewController.m */,
+				B7BD46441ECD9608000E183E /* GridStyleViewController.h */,
+				B7BD46451ECD9608000E183E /* GridStyleViewController.m */,
+				B7BD46471ECD96F4000E183E /* FrameStyleViewController.h */,
+				B7BD46481ECD96F4000E183E /* FrameStyleViewController.m */,
 			);
 			path = Examples;
 			sourceTree = "<group>";
@@ -294,8 +309,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7BD46491ECD96F4000E183E /* FrameStyleViewController.m in Sources */,
+				B7BD46431ECD9454000E183E /* ColumnFlowStyleViewController.m in Sources */,
 				B7BD46391ECD8CDD000E183E /* HomeTableViewController.m in Sources */,
 				B7BD46401ECD8F66000E183E /* FMCollectionView.m in Sources */,
+				B7BD46461ECD9608000E183E /* GridStyleViewController.m in Sources */,
 				B7BD46091ECD8ABE000E183E /* AppDelegate.m in Sources */,
 				B7BD46061ECD8ABE000E183E /* main.m in Sources */,
 				B7BD463C1ECD8F48000E183E /* TableViewStyleViewController.m in Sources */,
