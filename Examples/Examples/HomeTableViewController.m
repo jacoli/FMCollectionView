@@ -29,6 +29,7 @@
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
     
     self.models = [[NSMutableArray alloc] init];
+    [self.models addObject:@{@"title" : @"Default UICollectionView", @"class" : @"DefaultCollectionViewController"}];
     [self.models addObject:@{@"title" : @"Row layout style (Same to table view)", @"class" : @"TableViewStyleViewController"}];
     [self.models addObject:@{@"title" : @"Column flow layout style", @"class" : @"ColumnFlowStyleViewController"}];
     [self.models addObject:@{@"title" : @"Grid layout style", @"class" : @"GridStyleViewController"}];

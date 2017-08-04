@@ -96,6 +96,10 @@ typedef NS_ENUM(NSInteger, FMEditingControlsStyle) {
 
 - (CGFloat)collectionView:(FMCollectionView *)collectionView itemsSpacingInSection:(NSInteger)section;
 
+- (CGFloat)collectionView:(FMCollectionView *)collectionView headerHeightAtSection:(NSInteger)section;
+
+- (UIView *)collectionView:(FMCollectionView *)collectionView headerAtSection:(NSInteger)section;
+
 @end
 
 @protocol FMCollectionViewDelegate <NSObject>

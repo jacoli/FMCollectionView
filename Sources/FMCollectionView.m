@@ -11,10 +11,12 @@
 
 #define FMCollectionViewDebug (0)
 
+#define SectionHeaderIndex (-1)
+
 @interface FMCollectionItemModel : NSObject
 
 @property (nonatomic, assign) CGRect frame;
-@property (nonatomic, strong) NSIndexPath *indexPath;
+@property (nonatomic, strong) NSIndexPath *indexPath; // indexPath.row == SectionHeaderIndex means header item
 
 + (instancetype)itemModelWithFrame:(CGRect)frame atIndexPath:(NSIndexPath *)indexPath;
 
@@ -188,7 +190,7 @@ static int kfmc_itemOriginalFrame;
 }
 
 - (void)onSelected:(UIView *)item {
-    if (item) {
+    if (item && item.fmc_indexPath.row != SectionHeaderIndex) {
 #if FMCollectionViewDebug
         NSLog(@"{FMCollectionView} : item(%@/%@) did selected", @(item.fmc_indexPath.section), @(item.fmc_indexPath.row));
 #endif
@@ -252,7 +254,7 @@ static int kfmc_itemOriginalFrame;
 }
 
 - (BOOL)canEditForItem:(UIView *)item {
-    if (item) {
+    if (item && item.fmc_indexPath.row != SectionHeaderIndex) {
         FMEditingControlsStyle style = FMEditingControlsStyleDelete;
         if ([self.delegatesAndDataSource respondsToSelector:@selector(collectionView:editingControlsStyleAtIndexPath:)]) {
             style = [self.delegatesAndDataSource collectionView:self editingControlsStyleAtIndexPath:item.fmc_indexPath];
@@ -462,12 +464,23 @@ static int kfmc_itemOriginalFrame;
     return isShowed;
 }
 
+- (UIView *)fetchViewFromDataSourceWithModel:(FMCollectionItemModel *)model {
+    if (model.indexPath.row == SectionHeaderIndex) {
+        if ([self.delegatesAndDataSource respondsToSelector:@selector(collectionView:headerAtSection:)]) {
+            return [self.delegatesAndDataSource collectionView:self headerAtSection:model.indexPath.section];
+        } else {
+            return nil;
+        }
+    } else {
+        return [self.delegatesAndDataSource collectionView:self itemAtIndexPath:model.indexPath];
+    }
+}
+
 - (void)layoutItems:(CGRect)visibleRect {
     if (self.visibleItems.count == 0) {
         for (FMCollectionItemModel *model in self.itemLayouts) {
             if (CGRectIntersectsRect(visibleRect, model.frame)) {
-                UIView *view = [self.delegatesAndDataSource collectionView:self itemAtIndexPath:model.indexPath];
-                [self addItem:view ofModel:model];
+                [self addItem:[self fetchViewFromDataSourceWithModel:model] ofModel:model];
             }
         }
     } else {
@@ -475,8 +488,7 @@ static int kfmc_itemOriginalFrame;
         [self removeItem:self.visibleItems.lastObject ifOutOfRect:visibleRect];
         for (FMCollectionItemModel *model in self.itemLayouts) {
             if (CGRectIntersectsRect(visibleRect, model.frame) && ![self isVisibleWithModel:model]) {
-                UIView *view = [self.delegatesAndDataSource collectionView:self itemAtIndexPath:model.indexPath];
-                [self addItem:view ofModel:model];
+                [self addItem:[self fetchViewFromDataSourceWithModel:model] ofModel:model];
             }
         }
     }
@@ -521,12 +533,29 @@ static int kfmc_itemOriginalFrame;
 
 #pragma mark - Measure
 
+- (CGFloat)measureSectionHeaderInSection:(NSInteger)section
+                               yBaseline:(CGFloat)yBaseline
+                   andAddResultToLayouts:(inout NSMutableArray *)layouts {
+    if ([self.delegatesAndDataSource respondsToSelector:@selector(collectionView:headerHeightAtSection:)]) {
+        CGFloat headerHeight = [self.delegatesAndDataSource collectionView:self headerHeightAtSection:section];
+        if (headerHeight > 0) {
+            CGRect absFrame = CGRectMake(0, yBaseline, CGRectGetWidth(self.scrollView.frame), headerHeight);
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:SectionHeaderIndex inSection:section];
+            [layouts addObject:[FMCollectionItemModel itemModelWithFrame:absFrame atIndexPath:indexPath]];
+            return yBaseline + headerHeight;
+        }
+    }
+    
+    return yBaseline;
+}
+
 - (CGFloat)measureRowLayoutInSection:(NSInteger)section
                    withSectionInsets:(UIEdgeInsets)sectionInsets
                         itemsSpacing:(CGFloat)itemsSpacing
                            yBaseline:(CGFloat)yBaseline
                andAddResultToLayouts:(inout NSMutableArray *)layouts {
     NSInteger numberOfItemsInSection = [self.delegatesAndDataSource collectionView:self numberOfItemsInSection:section];
+    
     CGFloat itemWidth = CGRectGetWidth(self.scrollView.frame) - sectionInsets.left - sectionInsets.right;
     CGPoint offset = CGPointMake(sectionInsets.left, yBaseline + sectionInsets.top);
     
@@ -555,6 +584,7 @@ static int kfmc_itemOriginalFrame;
                                   yBaseline:(CGFloat)yBaseline
                       andAddResultToLayouts:(inout NSMutableArray *)layouts {
     NSInteger numberOfItemsInSection = [self.delegatesAndDataSource collectionView:self numberOfItemsInSection:section];
+    
     NSInteger numberOfColumns = 2;
     if ([self.delegatesAndDataSource respondsToSelector:@selector(numberOfColumnsForColumnFlowLayoutInSection:)]) {
         numberOfColumns = [self.delegatesAndDataSource numberOfColumnsForColumnFlowLayoutInSection:section];
@@ -614,6 +644,7 @@ static int kfmc_itemOriginalFrame;
                             yBaseline:(CGFloat)yBaseline
                 andAddResultToLayouts:(inout NSMutableArray *)layouts {
     NSInteger numberOfItemsInSection = [self.delegatesAndDataSource collectionView:self numberOfItemsInSection:section];
+    
     NSInteger numberOfColumns = 2;
     if ([self.delegatesAndDataSource respondsToSelector:@selector(numberOfColumnsForGridLayoutInSection:)]) {
         numberOfColumns = [self.delegatesAndDataSource numberOfColumnsForGridLayoutInSection:section];
@@ -653,6 +684,7 @@ static int kfmc_itemOriginalFrame;
                              yBaseline:(CGFloat)yBaseline
                  andAddResultToLayouts:(inout NSMutableArray *)layouts {
     NSInteger numberOfItemsInSection = [self.delegatesAndDataSource collectionView:self numberOfItemsInSection:section];
+    
     CGFloat sectionWidth = (CGRectGetWidth(self.scrollView.frame) - sectionInsets.left - sectionInsets.right);
     CGPoint offset = CGPointMake(sectionInsets.left, yBaseline + sectionInsets.top);
     CGFloat yBottomLine = offset.y;
@@ -684,6 +716,14 @@ static int kfmc_itemOriginalFrame;
     CGFloat contentMaxY = CGRectGetMaxY(headerRect);
     
     for (NSInteger sectionIndex = 0; sectionIndex < numberOfSections; ++sectionIndex) {
+        // FIX: If number of items is zero, fast return, don't show this section.
+        NSInteger numberOfItemsInSection = [self.delegatesAndDataSource collectionView:self numberOfItemsInSection:sectionIndex];
+        if (numberOfItemsInSection <= 0) {
+            continue;
+        }
+        
+        contentMaxY = [self measureSectionHeaderInSection:sectionIndex yBaseline:contentMaxY andAddResultToLayouts:itemLayouts];
+        
         CGFloat sectionsSpacing = self.sectionsSpacing;
         UIEdgeInsets sectionInsets = self.sectionEdgeInsets;
         if ([self.delegatesAndDataSource respondsToSelector:@selector(collectionView:edgeInsetsOfSection:)]) {
