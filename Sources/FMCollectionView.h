@@ -110,6 +110,16 @@ typedef NS_ENUM(NSInteger, FMEditingControlsStyle) {
 
 @end
 
+@protocol FMCollectionViewBottomRefleshViews <NSObject>
+
+@optional
+
+- (UIView *)bottomRefleshingViewOfCollectionView:(FMCollectionView *)collectionView;
+- (UIView *)bottomRetryViewOfCollectionView:(FMCollectionView *)collectionView;
+- (UIView *)bottomEndViewOfCollectionView:(FMCollectionView *)collectionView;
+
+@end
+
 #pragma mark - Collection View
 
 @protocol FMCollectionViewDelegatesAndDataSource
@@ -119,7 +129,8 @@ FMSectionRowLayout,
 FMSectionColumnFlowLayout,
 FMSectionGridLayout,
 FMSectionFrameLayout,
-FMCollectionViewEditingDelegate>
+FMCollectionViewEditingDelegate,
+FMCollectionViewBottomRefleshViews>
 @end
 
 /**
@@ -196,5 +207,17 @@ FMCollectionViewEditingDelegate>
  */
 - (NSInteger)numberOfSections;
 - (NSInteger)numberOfItemsInSection:(NSInteger)section;
+
+#pragma mark - Bottom Reflesh
+
+/**
+ Enable bottom reflesh.
+ */
+- (void)enableBottomReflesh:(BOOL(^)(void))hasMore loadMoreCallback:(void(^)(void))loadMoreCallback;
+
+/**
+ Manually call this method when response is received.
+ */
+- (void)endBottomRefleshing:(BOOL)isSuccess;
 
 @end

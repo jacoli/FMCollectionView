@@ -29,6 +29,14 @@
     self.collectionView.delegatesAndDataSource = self;
     self.collectionView.editingMode = YES;
     [self.view addSubview:self.collectionView];
+    
+    [self.collectionView enableBottomReflesh:^BOOL{
+        return YES;
+    } loadMoreCallback:^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.collectionView endBottomRefleshing:NO];
+        });
+    }];
 }
 
 - (void)didReceiveMemoryWarning {

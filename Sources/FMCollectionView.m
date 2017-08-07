@@ -11,6 +11,13 @@
 
 #define FMCollectionViewDebug (0)
 
+typedef NS_ENUM(NSInteger, FMBottomRefleshStatus) {
+    FMBottomRefleshStatusNone = 0,
+    FMBottomRefleshStatusLoading,
+    FMBottomRefleshStatusLoadFailed,
+    FMBottomRefleshStatusEnd
+};
+
 #define SectionHeaderIndex (-1)
 
 @interface FMCollectionItemModel : NSObject
@@ -91,6 +98,15 @@ static int kfmc_itemOriginalFrame;
 @property (nonatomic, strong) UIView *editingItem;
 @property (nonatomic, strong) UIView *editingControls;
 
+// bottom reflesh
+@property (nonatomic, assign) BOOL bottomRefleshEnabled;
+@property (nonatomic, copy) void(^loadMoreCallback)(void);
+@property (nonatomic, copy) BOOL(^hasMoreCallback)(void);
+@property (nonatomic, assign) NSInteger bottomRefleshingPreloadThreshold;
+@property (nonatomic, assign) FMBottomRefleshStatus bottomRefleshStatus;
+@property (nonatomic, assign) CGFloat bottomInsetCustom;
+@property (nonatomic, assign) CGFloat bottomRefleshViewDefaultHeight;
+
 @end
 
 @implementation FMCollectionView
@@ -132,6 +148,10 @@ static int kfmc_itemOriginalFrame;
     
     UITapGestureRecognizer *selectionTapGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onTapGesture:)];
     [self addGestureRecognizer:selectionTapGR];
+    
+    self.bottomRefleshingPreloadThreshold = 2;
+    self.bottomRefleshStatus = FMBottomRefleshStatusNone;
+    self.bottomRefleshViewDefaultHeight = 100.f;
 }
 
 - (void)dealloc {
@@ -148,6 +168,21 @@ static int kfmc_itemOriginalFrame;
                        context:(void *)context {
     if([keyPath isEqualToString:@"contentOffset"]) {
         [self setNeedsLayout];
+    }
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    if (!CGRectEqualToRect(self.bounds, self.backgroundView.frame)) {
+        self.backgroundView.frame = self.bounds;
+    }
+    
+    if (CGRectEqualToRect(self.bounds, self.scrollView.frame)) {
+        [self layout];
+    } else {
+        self.scrollView.frame = self.bounds;
+        [self reloadItems];
     }
 }
 
@@ -381,18 +416,6 @@ static int kfmc_itemOriginalFrame;
 
 #pragma mark - Layouts
 
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    
-    if (!CGRectEqualToRect(self.bounds, self.scrollView.frame)) {
-        self.scrollView.frame = self.bounds;
-    }
-    if (!CGRectEqualToRect(self.bounds, self.backgroundView.frame)) {
-        self.backgroundView.frame = self.bounds;
-    }
-    [self layout];
-}
-
 - (void)layoutHeader:(CGRect)visibleRect {
     if (self.headerView) {
         if (CGRectIntersectsRect(self.headerRect, visibleRect)) {
@@ -472,6 +495,7 @@ static int kfmc_itemOriginalFrame;
             return nil;
         }
     } else {
+        [self triggerBottomRefleshingIfNeed:model.indexPath];
         return [self.delegatesAndDataSource collectionView:self itemAtIndexPath:model.indexPath];
     }
 }
@@ -823,6 +847,7 @@ static int kfmc_itemOriginalFrame;
         UIView *item = [[itemClass alloc] init];
         if ([item isKindOfClass:UIView.class]) {
             item.fmc_reuseId = reuseId;
+            item.fmc_indexPath = indexPath;
         }
         return item;
     }
@@ -853,6 +878,7 @@ static int kfmc_itemOriginalFrame;
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         if (weakSelf.delegatesAndDataSource) {
+            [weakSelf endBottomRefleshing:YES];
             [weakSelf measure];
             [weakSelf cleanItemsAndLayout];
         }
@@ -909,6 +935,189 @@ static int kfmc_itemOriginalFrame;
         return [self.delegatesAndDataSource collectionView:self numberOfItemsInSection:section];
     } else {
         return 0;
+    }
+}
+
+#pragma mark - Bottom Reflesh
+
+- (UIView *)bottomRefleshView {
+    if ([self.delegatesAndDataSource respondsToSelector:@selector(bottomRefleshingViewOfCollectionView:)]) {
+        return [self.delegatesAndDataSource bottomRefleshingViewOfCollectionView:self];
+    } else {
+        UIView *bottomRefleshView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), self.bottomRefleshViewDefaultHeight)];
+        
+        UIActivityIndicatorView *indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        indicatorView.frame = CGRectMake((CGRectGetWidth(bottomRefleshView.frame) - CGRectGetWidth(indicatorView.frame)) / 2, (CGRectGetHeight(bottomRefleshView.frame) - CGRectGetHeight(indicatorView.frame)) / 2, CGRectGetWidth(indicatorView.frame), CGRectGetHeight(indicatorView.frame));
+        [indicatorView startAnimating];
+        [bottomRefleshView addSubview:indicatorView];
+        
+        return bottomRefleshView;
+    }
+}
+
+- (UIView *)bottomNoMoreView {
+    if ([self.delegatesAndDataSource respondsToSelector:@selector(bottomEndViewOfCollectionView:)]) {
+        return [self.delegatesAndDataSource bottomEndViewOfCollectionView:self];
+    } else {
+        UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), self.bottomRefleshViewDefaultHeight)];
+        l.text = @"- End -";
+        l.textAlignment = NSTextAlignmentCenter;
+        return l;
+    }
+}
+
+- (UIView *)bottomRetryView {
+    if ([self.delegatesAndDataSource respondsToSelector:@selector(bottomRetryViewOfCollectionView:)]) {
+        UIView *retryView = [self.delegatesAndDataSource bottomRetryViewOfCollectionView:self];
+        if (retryView) {
+            UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+            btn.frame = CGRectMake(0, 0, CGRectGetWidth(retryView.frame), CGRectGetHeight(retryView.frame));
+            [btn addTarget:self action:@selector(bottomRefleshRetryTriggered) forControlEvents:UIControlEventTouchUpInside];
+            retryView.frame = btn.bounds;
+            [btn addSubview:retryView];
+            return btn;
+        } else {
+            return nil;
+        }
+    } else {
+        UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+        [btn setTitle:@"点击重新加载" forState:UIControlStateNormal];
+        btn.frame = CGRectMake(0, 0, CGRectGetWidth(self.scrollView.frame), self.bottomRefleshViewDefaultHeight);
+        [btn addTarget:self action:@selector(bottomRefleshRetryTriggered) forControlEvents:UIControlEventTouchUpInside];
+        return btn;
+    }
+}
+
+- (void)enableBottomReflesh:(BOOL(^)(void))hasMore loadMoreCallback:(void(^)(void))loadMoreCallback {
+    self.bottomRefleshEnabled = YES;
+    self.hasMoreCallback = hasMore;
+    self.loadMoreCallback = loadMoreCallback;
+    [self setNoneFooterView];
+}
+
+- (void)setContentInsetWithCustomBottomInset:(CGFloat)customBottomInset {
+    UIEdgeInsets insets = self.scrollView.contentInset;
+    insets.bottom -= self.bottomInsetCustom;
+    self.bottomInsetCustom = customBottomInset;
+    insets.bottom += self.bottomInsetCustom;
+    self.scrollView.contentInset = insets;
+}
+
+- (void)setNoMoreFooterView {
+    UIView *endView = self.bottomNoMoreView;
+    if (endView) {
+        [self setContentInsetWithCustomBottomInset:-CGRectGetHeight(endView.frame)];
+        self.footerView = endView;
+    } else {
+        [self setContentInsetWithCustomBottomInset:0];
+        self.footerView = nil;
+    }
+}
+
+- (void)setRefleshingFooterView {
+    [self setContentInsetWithCustomBottomInset:0];
+    self.footerView = self.bottomRefleshView;
+}
+
+- (void)setNoneFooterView {
+    [self setContentInsetWithCustomBottomInset:0];
+    self.footerView = nil;
+}
+
+- (void)setRetryFooterView {
+    [self setContentInsetWithCustomBottomInset:0];
+    self.footerView = self.bottomRetryView;
+}
+
+- (void)setBottomRefleshStatus:(FMBottomRefleshStatus)bottomRefleshStatus {
+    if (_bottomRefleshStatus != bottomRefleshStatus) {
+        _bottomRefleshStatus = bottomRefleshStatus;
+        
+        switch (bottomRefleshStatus) {
+            case FMBottomRefleshStatusNone:
+                [self setNoneFooterView];
+                break;
+            case FMBottomRefleshStatusLoading:
+                [self setRefleshingFooterView];
+                break;
+            case FMBottomRefleshStatusLoadFailed:
+                [self setRetryFooterView];
+                break;
+            case FMBottomRefleshStatusEnd:
+                [self setNoMoreFooterView];
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+- (void)triggerBottomRefleshingIfNeed:(NSIndexPath *)indexPath {
+    if (!self.bottomRefleshEnabled) {
+        return;
+    }
+    
+    if (self.bottomRefleshStatus == FMBottomRefleshStatusLoading
+        || self.bottomRefleshStatus == FMBottomRefleshStatusLoadFailed) {
+        return;
+    }
+    
+    NSInteger sections = [self numberOfSections];
+    if (indexPath.section < sections - 1) return;
+    
+    NSInteger rows = [self numberOfItemsInSection:indexPath.section];
+    if (indexPath.row < rows - 1 - self.bottomRefleshingPreloadThreshold) return;
+    
+    if (self.hasMoreCallback && self.hasMoreCallback()) {
+        if (self.loadMoreCallback) {
+            self.loadMoreCallback();
+            self.bottomRefleshStatus = FMBottomRefleshStatusLoading;
+        } else {
+            self.bottomRefleshStatus = FMBottomRefleshStatusNone;
+        }
+    } else {
+        self.bottomRefleshStatus = FMBottomRefleshStatusEnd;
+    }
+}
+
+- (void)endBottomRefleshing:(BOOL)isSuccess {
+    if (!self.bottomRefleshEnabled) {
+        return;
+    }
+    
+    if (self.bottomRefleshStatus != FMBottomRefleshStatusLoading) {
+        return;
+    }
+    
+    if (self.hasMoreCallback && self.hasMoreCallback()) {
+        if (isSuccess) {
+            self.bottomRefleshStatus = FMBottomRefleshStatusNone;
+        } else {
+            self.bottomRefleshStatus = FMBottomRefleshStatusLoadFailed;
+        }
+    } else {
+        self.bottomRefleshStatus = FMBottomRefleshStatusEnd;
+    }
+}
+
+- (void)bottomRefleshRetryTriggered {
+    if (!self.bottomRefleshEnabled) {
+        return;
+    }
+    
+    if (self.bottomRefleshStatus != FMBottomRefleshStatusLoadFailed) {
+        return;
+    }
+    
+    if (self.hasMoreCallback && self.hasMoreCallback()) {
+        if (self.loadMoreCallback) {
+            self.loadMoreCallback();
+            self.bottomRefleshStatus = FMBottomRefleshStatusLoading;
+        } else {
+            self.bottomRefleshStatus = FMBottomRefleshStatusNone;
+        }
+    } else {
+        self.bottomRefleshStatus = FMBottomRefleshStatusEnd;
     }
 }
 
