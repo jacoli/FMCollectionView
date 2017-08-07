@@ -8,13 +8,13 @@
 
 * 类似UITableView或UICollectionView
 
-* 支持多种布局方式，Row、Grid、WaterFlow、Flow(TODO)等
+* 支持多种布局方式，Row、Grid、WaterFlow、Flow等
 
 * 自定义布局
 
 * 元素复用、预加载.
 
-* 支持下拉刷新（TODO）、支持上拉刷新（TODO）
+* 支持下拉刷新、支持上拉刷新
 
 ## Installation
 

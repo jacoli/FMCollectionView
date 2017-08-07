@@ -17,7 +17,8 @@ typedef NS_ENUM(NSInteger, FMSectionLayoutStyle) {
     FMSectionLayoutStyleRow = 0,
     FMSectionLayoutStyleColumnFlow,
     FMSectionLayoutStyleGrid,
-    FMSectionLayoutStyleFrame
+    FMSectionLayoutStyleFrame,
+    FMSectionLayoutStyleFlow
 };
 
 @protocol FMSectionRowLayout <NSObject>
@@ -53,6 +54,14 @@ typedef NS_ENUM(NSInteger, FMSectionLayoutStyle) {
 @optional
 
 - (CGRect)frameLayoutInCollectionView:(FMCollectionView *)collectionView frameOfItemInSectionAtIndexPath:(NSIndexPath *)indexPath sectionContentWidth:(CGFloat)inWidth;
+
+@end
+
+@protocol FMSectionFlowLayout <NSObject>
+
+@optional
+
+- (CGSize)sizeAtIndexPath:(NSIndexPath *)indexPath forFlowLayoutWithSectionWidth:(CGFloat)sectionWidth;
 
 @end
 
@@ -129,6 +138,7 @@ FMSectionRowLayout,
 FMSectionColumnFlowLayout,
 FMSectionGridLayout,
 FMSectionFrameLayout,
+FMSectionFlowLayout,
 FMCollectionViewEditingDelegate,
 FMCollectionViewBottomRefleshViews>
 @end

@@ -30,6 +30,7 @@
     
     self.models = [[NSMutableArray alloc] init];
     [self.models addObject:@{@"title" : @"Default UICollectionView", @"class" : @"DefaultCollectionViewController"}];
+    [self.models addObject:@{@"title" : @"FlowStyleViewController", @"class" : @"FlowStyleViewController"}];
     [self.models addObject:@{@"title" : @"Row layout style (Same to table view)", @"class" : @"TableViewStyleViewController"}];
     [self.models addObject:@{@"title" : @"Column flow layout style", @"class" : @"ColumnFlowStyleViewController"}];
     [self.models addObject:@{@"title" : @"Grid layout style", @"class" : @"GridStyleViewController"}];

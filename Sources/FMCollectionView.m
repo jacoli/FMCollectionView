@@ -729,6 +729,83 @@ static int kfmc_itemOriginalFrame;
     return yBottomLine + sectionInsets.bottom;
 }
 
+- (CGFloat)measureItemsInLineForFlowLayout:(NSArray *)itemsInLine
+                                    offset:(CGPoint)offset
+                              sectionWidth:(CGFloat)sectionWidth
+                     andAddResultToLayouts:(inout NSMutableArray *)layouts {
+    if (itemsInLine.count == 1) {
+        FMCollectionItemModel *model = itemsInLine[0];
+        model.frame = CGRectMake(offset.x + (sectionWidth - CGRectGetWidth(model.frame)) / 2,
+                                 offset.y,
+                                 CGRectGetWidth(model.frame),
+                                 CGRectGetHeight(model.frame));
+        [layouts addObject:model];
+        return offset.y + CGRectGetHeight(model.frame);
+    }
+    else if (itemsInLine.count > 1) {
+        CGFloat maxHeight = 0;
+        CGFloat itemTotalWidth = 0;
+        for (FMCollectionItemModel *model in itemsInLine) {
+            maxHeight = MAX(maxHeight, CGRectGetHeight(model.frame));
+            itemTotalWidth += CGRectGetWidth(model.frame);
+        }
+        CGFloat margin = (sectionWidth - itemTotalWidth) / (itemsInLine.count - 1);
+        
+        for (NSInteger i = 0; i < itemsInLine.count; ++i) {
+            FMCollectionItemModel *model = itemsInLine[i];
+            model.frame = CGRectMake(offset.x,
+                                     offset.y + (maxHeight - CGRectGetHeight(model.frame)) / 2,
+                                     CGRectGetWidth(model.frame),
+                                     CGRectGetHeight(model.frame));
+            [layouts addObject:model];
+            offset.x = CGRectGetMaxX(model.frame) + margin;
+        }
+        return offset.y + maxHeight;
+    } else {
+        return offset.y;
+    }
+}
+
+- (CGFloat)measureFlowLayoutInSection:(NSInteger)section
+                    withSectionInsets:(UIEdgeInsets)sectionInsets
+                         itemsSpacing:(CGFloat)itemsSpacing
+                            yBaseline:(CGFloat)yBaseline
+                andAddResultToLayouts:(inout NSMutableArray *)layouts {
+    NSInteger numberOfItemsInSection = [self.delegatesAndDataSource collectionView:self numberOfItemsInSection:section];
+    
+    CGFloat sectionWidth = (CGRectGetWidth(self.scrollView.frame) - sectionInsets.left - sectionInsets.right);
+    CGFloat yBottomLine = yBaseline + sectionInsets.top;
+    
+    NSMutableArray *itemsInLine = [[NSMutableArray alloc] init];
+    CGFloat offset = 0;
+    for (NSInteger rowIndex = 0; rowIndex < numberOfItemsInSection; ++rowIndex) {
+        CGSize itemSize = CGSizeMake(self.itemHeight, self.itemHeight);
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:rowIndex inSection:section];
+        if ([self.delegatesAndDataSource respondsToSelector:@selector(sizeAtIndexPath:forFlowLayoutWithSectionWidth:)]) {
+            itemSize = [self.delegatesAndDataSource sizeAtIndexPath:indexPath forFlowLayoutWithSectionWidth:sectionWidth];
+        }
+        
+        if (offset + itemSize.width > sectionWidth) {
+            // last line
+            yBottomLine = [self measureItemsInLineForFlowLayout:itemsInLine offset:CGPointMake(sectionInsets.left, yBottomLine) sectionWidth:sectionWidth andAddResultToLayouts:layouts];
+            yBottomLine += itemsSpacing;
+            [itemsInLine removeAllObjects];
+            
+            // new line
+            offset = itemSize.width + itemsSpacing;
+        } else {
+            // next item
+            offset += itemSize.width + itemsSpacing;
+        }
+        
+        [itemsInLine addObject:[FMCollectionItemModel itemModelWithFrame:CGRectMake(0, 0, itemSize.width, itemSize.height) atIndexPath:indexPath]];
+    }
+    
+    yBottomLine = [self measureItemsInLineForFlowLayout:itemsInLine offset:CGPointMake(sectionInsets.left, yBottomLine) sectionWidth:sectionWidth andAddResultToLayouts:layouts];
+    
+    return yBottomLine + sectionInsets.bottom;
+}
+
 - (void)measureContentWithHeaderRect:(CGRect)headerRect {
     NSMutableArray *itemLayouts = [[NSMutableArray alloc] init];
     
@@ -768,6 +845,8 @@ static int kfmc_itemOriginalFrame;
             contentMaxY = [self measureGirdLayoutInSection:sectionIndex withSectionInsets:sectionInsets itemsSpacing:itemsSpacing yBaseline:contentMaxY andAddResultToLayouts:itemLayouts];
         } else if (sectionLayout == FMSectionLayoutStyleFrame) {
             contentMaxY = [self measureFrameLayoutInSection:sectionIndex withSectionInsets:sectionInsets itemsSpacing:itemsSpacing yBaseline:contentMaxY andAddResultToLayouts:itemLayouts];
+        } else if (sectionLayout == FMSectionLayoutStyleFlow) {
+            contentMaxY = [self measureFlowLayoutInSection:sectionIndex withSectionInsets:sectionInsets itemsSpacing:itemsSpacing yBaseline:contentMaxY andAddResultToLayouts:itemLayouts];
         } else {
             contentMaxY = [self measureRowLayoutInSection:sectionIndex withSectionInsets:sectionInsets itemsSpacing:itemsSpacing yBaseline:contentMaxY andAddResultToLayouts:itemLayouts];
         }
