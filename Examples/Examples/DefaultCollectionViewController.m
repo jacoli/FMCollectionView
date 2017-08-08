@@ -21,7 +21,7 @@
     // Do any additional setup after loading the view.
     
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
-    
+    layout.sectionHeadersPinToVisibleBounds = YES;
     
     self.collectionView = [[UICollectionView alloc] initWithFrame:self.view.bounds collectionViewLayout:layout];
     self.collectionView.delegate = self;
