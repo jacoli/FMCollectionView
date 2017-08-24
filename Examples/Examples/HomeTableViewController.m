@@ -35,6 +35,7 @@
     [self.models addObject:@{@"title" : @"Column flow layout style", @"class" : @"ColumnFlowStyleViewController"}];
     [self.models addObject:@{@"title" : @"Grid layout style", @"class" : @"GridStyleViewController"}];
     [self.models addObject:@{@"title" : @"Frame layout style(Used for custom layout)", @"class" : @"FrameStyleViewController"}];
+    [self.models addObject:@{@"title" : @"Bottom(Footer) reflesh example", @"class" : @"BottomRefleshViewController"}];
 }
 
 - (void)didReceiveMemoryWarning {

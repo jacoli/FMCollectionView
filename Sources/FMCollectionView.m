@@ -972,14 +972,10 @@ static int kfmc_itemOriginalFrame;
 }
 
 - (void)reloadItems {
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (weakSelf.delegatesAndDataSource) {
-            [weakSelf endBottomRefleshing:YES];
-            [weakSelf measure];
-            [weakSelf cleanItemsAndLayout];
-        }
-    });
+    if (self.delegatesAndDataSource) {
+        [self measure];
+        [self cleanItemsAndLayout];
+    }
 }
 
 // TODO not implemented
@@ -1216,6 +1212,11 @@ static int kfmc_itemOriginalFrame;
     } else {
         self.bottomRefleshStatus = FMBottomRefleshStatusEnd;
     }
+}
+
+- (void)reloadItemsAndEndBottomRefleshing:(BOOL)isSuccess {
+    [self reloadItems];
+    [self endBottomRefleshing:isSuccess];
 }
 
 @end

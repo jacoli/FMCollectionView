@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B72A63A11F3422CD002D58E9 /* DefaultCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B72A63A01F3422CD002D58E9 /* DefaultCollectionViewController.m */; };
+		B7A2ACA91F4E781900F1FA7B /* BottomRefleshViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A2ACA81F4E781900F1FA7B /* BottomRefleshViewController.m */; };
 		B7BD46061ECD8ABE000E183E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD46051ECD8ABE000E183E /* main.m */; };
 		B7BD46091ECD8ABE000E183E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B7BD46081ECD8ABE000E183E /* AppDelegate.m */; };
 		B7BD460F1ECD8ABE000E183E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B7BD460D1ECD8ABE000E183E /* Main.storyboard */; };
@@ -44,6 +45,8 @@
 /* Begin PBXFileReference section */
 		B72A639F1F3422CD002D58E9 /* DefaultCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefaultCollectionViewController.h; sourceTree = "<group>"; };
 		B72A63A01F3422CD002D58E9 /* DefaultCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DefaultCollectionViewController.m; sourceTree = "<group>"; };
+		B7A2ACA71F4E781900F1FA7B /* BottomRefleshViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BottomRefleshViewController.h; sourceTree = "<group>"; };
+		B7A2ACA81F4E781900F1FA7B /* BottomRefleshViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BottomRefleshViewController.m; sourceTree = "<group>"; };
 		B7BD46011ECD8ABE000E183E /* Examples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Examples.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7BD46051ECD8ABE000E183E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B7BD46071ECD8ABE000E183E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -125,6 +128,8 @@
 				B7BD46071ECD8ABE000E183E /* AppDelegate.h */,
 				B7BD46081ECD8ABE000E183E /* AppDelegate.m */,
 				B7BD46101ECD8ABE000E183E /* Assets.xcassets */,
+				B7A2ACA71F4E781900F1FA7B /* BottomRefleshViewController.h */,
+				B7A2ACA81F4E781900F1FA7B /* BottomRefleshViewController.m */,
 				B7BD46411ECD9454000E183E /* ColumnFlowStyleViewController.h */,
 				B7BD46421ECD9454000E183E /* ColumnFlowStyleViewController.m */,
 				B72A639F1F3422CD002D58E9 /* DefaultCollectionViewController.h */,
@@ -329,6 +334,7 @@
 				B7BD463C1ECD8F48000E183E /* TableViewStyleViewController.m in Sources */,
 				B7CAC9031F3858AC00805838 /* FlowStyleViewController.m in Sources */,
 				B72A63A11F3422CD002D58E9 /* DefaultCollectionViewController.m in Sources */,
+				B7A2ACA91F4E781900F1FA7B /* BottomRefleshViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

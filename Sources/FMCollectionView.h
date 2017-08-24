@@ -230,4 +230,6 @@ FMCollectionViewBottomRefleshViews>
  */
 - (void)endBottomRefleshing:(BOOL)isSuccess;
 
+- (void)reloadItemsAndEndBottomRefleshing:(BOOL)isSuccess;
+
 @end

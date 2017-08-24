@@ -16,6 +16,14 @@
 
 * 支持下拉刷新、支持上拉刷新
 
+## Alternative
+
+* UITableView for row layout.
+
+* UICollectionView with UICollectionViewFlowLayout for grid/flow layout.
+
+* UICollectionView with custom layout.
+
 ## Installation
 
 With [CocoaPods](http://cocoapods.org/), add this line to your `Podfile`.
